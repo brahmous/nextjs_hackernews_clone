@@ -1,0 +1,16 @@
+generator client {
+	provider = "prisma-client-js"
+	output = "../../generated/prisma"
+}
+
+datasource db {
+	provider = "postgresql"
+	url = "postgres://hn_admin:pswd@localhost:5432/hn_"
+}
+
+model hn_user {
+	id Int @id @default(autoincrement())
+	email String @unique
+	password String
+	username String
+}

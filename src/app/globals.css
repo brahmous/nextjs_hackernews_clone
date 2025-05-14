@@ -3,6 +3,8 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+	--menu-text-size: 12px;
+	--logo-text-size: 14px;
 }
 
 @theme inline {
@@ -10,15 +12,17 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+	--menu-text-size: var(--menu-text-size);
+	--text-logo-size-1: var(--logo-text-size);
 }
-
+/*
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
 }
-
+*/
 body {
   background: var(--background);
   color: var(--foreground);
