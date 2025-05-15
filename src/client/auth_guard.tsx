@@ -15,6 +15,8 @@ export function RedirectIfLoggedIn({ children }: { children: React.ReactNode }) 
 	}, [context, router]);
 
 	return (
+
+		// Render loading auth here
 		<>
 			{children}
 		</>
@@ -34,6 +36,8 @@ export function RedirectIfNotLoggedIn({ children }: { children: React.ReactNode 
 	}, [context, router]);
 
 	return (
+
+		// Render loading auth here
 		<>
 			{children}
 		</>

@@ -28,7 +28,7 @@ export function AuthProvider(props: { children: React.ReactNode }) {
 
 		getMe();
 
-	}, []);
+	}, [authSate]);
 
 	return (<AuthContext.Provider
 		value={

@@ -2,19 +2,16 @@
 // import Image from "next/image";
 //
 import { HN_Header, HN_LoginForm } from "@/client/login-form-component";
-import { RedirectIfLoggedIn } from "@/client/redirect_if_logged_in";
+import { RedirectIfLoggedIn } from "@/client/auth_guard";
 
 
 import { useContext } from "react";
 import { AuthContext } from "@/client/auth-provider";
 
 export default function Home() {
-	const auth_context = useContext(AuthContext);
-
 	return (
 		<RedirectIfLoggedIn>
 			<div className="">
-				<HN_Header logged_in={auth_context.logged_in} />
 				<HN_LoginForm />
 			</div>
 		</RedirectIfLoggedIn>

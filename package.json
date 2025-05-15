@@ -17,7 +17,8 @@
     "react-dom": "^19.0.0",
     "redis": "^5.0.1",
     "tsx": "^4.19.4",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "zod": "^3.24.4"
   },
   "prisma": {
     "seed": "tsx src/lib/prisma/seed.ts"

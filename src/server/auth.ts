@@ -1,12 +1,15 @@
 'use server'
-import { IsError, MyError, RegisterUserFormState } from "@/server/types"
+import { FormSubmited, IsError, MyError, RegisterUserFormErrorLog, RegisterUserFormState } from "@/server/types"
 import DB from "@/db";
 import CACHE from "@/cache"
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { LoginFormState } from "@/server/types";
-import { verify } from "argon2";
+import { hash, verify } from "argon2";
 import { v4 as uuidv4 } from "uuid";
+import { use } from "react";
+import { IsCreateUserIfDoesntExistInputValidationLog } from "@/db/user";
+import { create } from "domain";
 
 export async function VerifySession(): Promise<boolean> {
 
@@ -32,10 +35,61 @@ export async function VerifySession(): Promise<boolean> {
 
 };
 
+/* NOTE: this should return MyError
+ * error list should be returned by saveUser function
+ * velidation and saving the user must be moved to db function
+ * return type: FormSubmited (boolean) | MyError | FormInputErrors
+ * */
 export async function RegisterUser(prev_state: RegisterUserFormState, formData: FormData): Promise<RegisterUserFormState> {
 
+	const username = formData.get("username");
+	const email = formData.get("email");
+	const password = formData.get("password");
 
-	return false;
+	const { user_db } = DB();
+
+	let redirect_flag: boolean = false;
+
+	try {
+		const cookie_store = await cookies();
+
+		const create_user_result = await user_db.create_user_if_doesnt_exist(
+			{
+				username: (username ? username.toString() : undefined),
+				email: (email ? email.toString() : undefined),
+				password: (password ? password.toString() : undefined),
+			}
+		);
+
+		console.log({ create_user_result });
+
+		if (IsError(create_user_result)) {
+			return { error_code: create_user_result.error_code, error_message: create_user_result.error_message };
+		}
+
+		if (IsCreateUserIfDoesntExistInputValidationLog(create_user_result)) {
+			return {
+				username: create_user_result.username,
+				emai: create_user_result.email,
+				password: create_user_result.password
+			} as RegisterUserFormErrorLog;
+		}
+
+		const session_id: string = uuidv4();
+		const { session_storage } = CACHE();
+
+		await session_storage.saveSessionIfDoesntExist(session_id, { user_id: create_user_result.email, expires_at: Date.now() });
+
+		cookie_store.set("session_id", session_id);
+		redirect_flag = true;
+	} catch (err) {
+		console.log("error caught in registeruser()");
+		throw err;
+	} finally {
+		if (redirect_flag) redirect("/dashboard");
+	}
+
+	return true;
 }
 
 export async function LoginUser(prev_state: LoginFormState, formData: FormData): Promise<LoginFormState> {
@@ -81,7 +135,12 @@ export async function LoginUser(prev_state: LoginFormState, formData: FormData):
 		console.log("Error caught in LoguserIn()");
 		throw err;
 	} finally {
-		redirect("/dashboard");
+		// redirect("/dashboard");
+		return true;
 	}
 
 };
+
+
+
+

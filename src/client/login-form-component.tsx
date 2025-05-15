@@ -1,10 +1,13 @@
 'use client'
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { useState } from "react";
 import { LoginUser } from "@/server/auth";
 import { IsError, LoginFormState } from "@/server/types"
 import { useActionState } from "react";
 import Form from "next/form";
+import { AuthContext } from "./auth-provider";
+import { RegisterUserFormState, IsRegisterUserFormError } from "@/server/types";
+import { RegisterUser } from "@/server/auth";
 
 //////////////////////////////////////////
 // Client.
@@ -35,7 +38,9 @@ export interface HN_HeaderProps {
 	logged_in: boolean;
 }
 
-export function HN_Header(props: HN_HeaderProps) {
+export function HN_Header() {
+
+	const authContext = useContext(AuthContext);
 
 	useEffect(() => {
 		console.log("HN_Header rendered.");
@@ -45,14 +50,73 @@ export function HN_Header(props: HN_HeaderProps) {
 		<div className="flex border justify-between py-2 px-5">
 			<HN_Logo />
 			<div className="flex justify-between gap-5 ">
-				{!props.logged_in && <HN_LoginButton />} <HN_SignupButton />
+				{!authContext.logged_in && <HN_LoginButton />}
+				{!authContext.logged_in && <HN_SignupButton />}
 			</div>
 		</div>
 	)
 }
 
+export function HN_SignupForm() {
+
+	const [formState, setFormState] = useState<RegisterUserFormState>(false);
+	const [actionState, action, pending] = useActionState(RegisterUser, false);
+
+	useEffect(() => {
+		console.log({ actionState });
+		setFormState(actionState);
+	}, [actionState])
+
+	return <div
+		className="flex flex-col w-40 px-5 m-auto"
+	>
+		<p
+			className="text-(length:--text-logo-size-1) py-2">
+			Signup
+		</p>
+
+
+		<Form action={action} className="flex flex-col">
+
+			{IsError(formState) && <p className="text-[#ff0000]">{formState.error_message}</p>}
+			<label className="
+						text-(length:--menu-text-size)">
+				Username
+
+				{IsRegisterUserFormError(formState) && formState.username.map(error_message => <p className="text-[#ff0000]">{error_message}</p>)}
+				<input name="username" type="text" className="border" />
+			</label>
+
+			<label className="
+						text-(length:--menu-text-size)">
+				Email
+
+				{IsRegisterUserFormError(formState) && formState.emai.map(error_message => <p className="text-[#ff0000]">{error_message}</p>)}
+				<input name="email" type="text" className="border" />
+			</label>
+
+			<label className="
+						text-(length:--menu-text-size)">
+				Password
+
+				{IsRegisterUserFormError(formState) && formState.password.map(error_message => <p className="text-[#ff0000]">{error_message}</p>)}
+				<input name="password" type="password" className="border" />
+			</label>
+
+			<button className="border
+						text-(length:--menu-text-size) mt-2" type="submit" disabled={pending}
+			>
+				Sign up
+			</button>
+
+		</Form>
+	</div>
+
+}
+
 export function HN_LoginForm() {
 
+	const context = useContext(AuthContext);
 	const [formState, setFormState] = useState<LoginFormState>();
 	const [actionState, formAction, pending] = useActionState(LoginUser, false);
 
@@ -66,6 +130,9 @@ export function HN_LoginForm() {
 					error_message: actionState.error_message
 				}
 			);
+		} else {
+			console.log({ actionState })
+			if (actionState && context.set_auth) context.set_auth({ logged_in: true });
 		}
 
 	}, [actionState]);
@@ -94,7 +161,7 @@ export function HN_LoginForm() {
 				</label>
 				<button type="submit"
 					className="border
-						text-(length:--menu-text-size)">
+						text-(length:--menu-text-size) mt-2 w-100%">
 					Login
 				</button>
 			</Form>
