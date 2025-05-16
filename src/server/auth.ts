@@ -18,6 +18,8 @@ export async function VerifySession(): Promise<boolean> {
 		const cookie_store = await cookies();
 		const session_id = cookie_store.get("session_id");
 
+		console.log({session_id});
+
 		if (!session_id || session_id && IsError(await CACHE().session_storage.sessionExists(session_id.value))) {
 			redirect_flag = true;
 		}
@@ -94,23 +96,26 @@ export async function RegisterUser(prev_state: RegisterUserFormState, formData: 
 
 export async function LoginUser(prev_state: LoginFormState, formData: FormData): Promise<LoginFormState> {
 
+	
 	const email: string = formData.get("email")!.toString();
 	const password: string = formData.get("password")!.toString();
-
+	
 	const { user_db } = DB();
 	const { session_storage } = CACHE();
-
+	
 	try {
 		const find_user_result = await user_db.find_user_by_email(email);
-
+		
 		if (IsError(find_user_result)) {
+			console.log("HHHHHHHHHHHHHHHHHHHHHHEEEEEEEEEEEEERRRRRRRRRRREEEEEEEEEEEEEE")
 			return {
 				error_code: find_user_result.error_code,
 				error_message: find_user_result.error_message
 			} as MyError;
 		}
-
+		
 		if (!(await verify(find_user_result.password_hash, password))) {
+			console.log("##################### HERREEE THE PASSWORDS AREN'T THE SAME ####################")
 			return {
 				error_code: 2000,
 				error_message: "Email or password are wrong!"
@@ -120,7 +125,7 @@ export async function LoginUser(prev_state: LoginFormState, formData: FormData):
 		const session_id: string = uuidv4();
 		const save_session_result = await session_storage.saveSessionIfDoesntExist(session_id,
 			{
-				user_id: email,
+				user_id: find_user_result.id.toString(),
 				expires_at: Date.now()
 			});
 
@@ -128,17 +133,21 @@ export async function LoginUser(prev_state: LoginFormState, formData: FormData):
 			return { error_code: save_session_result.error_code, error_message: save_session_result.error_message };
 		}
 
+		console.log("LOG IN FUNCION: ", {session_id})
+
+
 		const cookie_store = await cookies();
 		cookie_store.set("session_id", session_id);
 
 	} catch (err) {
 		console.log("Error caught in LoguserIn()");
 		throw err;
-	} finally {
-		// redirect("/dashboard");
-		return true;
 	}
-
+	// finally {
+		// redirect("/dashboard");
+	//}
+	console.log("AAAAAAAAAAAAAAABBBBBBBBBBBBBBCCCCCCCCCCCCCCCCCCCCCCC");
+	return true;
 };
 
 

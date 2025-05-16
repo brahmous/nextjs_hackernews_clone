@@ -1,5 +1,5 @@
 'use client';
-import { useContext, useEffect } from 'react';
+import { act, useContext, useEffect } from 'react';
 import { useState } from 'react';
 import { LoginUser } from '@/server/auth';
 import { IsError, LoginFormState } from '@/server/types';
@@ -129,8 +129,11 @@ export function HN_LoginForm() {
   const context = useContext(AuthContext);
   const [formState, setFormState] = useState<LoginFormState>();
   const [actionState, formAction, pending] = useActionState(LoginUser, false);
+  const api_route: string = 'http://localhost:3000/api/me'
 
   useEffect(() => {
+    console.log('wWWWOOOOWOWOWOWOWOO', {actionState});
+
     if (IsError(actionState)) {
       console.log('hhhhhhhhhhheeeeeeeeeeeeerrrrrrrrrrrrrreeeeeeeeeeeeeee');
       setFormState({
@@ -138,9 +141,10 @@ export function HN_LoginForm() {
         error_message: actionState.error_message,
       });
     } else {
-      console.log({ actionState });
+      console.log("AAAAAAAAAAAAACCCCCCCCCTIIIIOONNNN STTAAAAAAATTTTTEE: ", { actionState });
       if (actionState && context.set_auth) {
-        mutate('http://localhost:3000/api/me');
+        alert("wassup")
+        mutate(api_route);
         context.set_auth({ state: AuthContextState.LOGGED_IN });
       }
     }
