@@ -5,10 +5,12 @@ import { HN_Header, HN_LoginForm } from "@/client/login-form-component";
 import { RedirectIfLoggedIn } from "@/client/auth_guard";
 
 
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { AuthContext } from "@/client/auth-provider";
 
 export default function Home() {
+	// alert("Home Enter")
+	// useEffect(()=>{ alert("home use effect") })
 	return (
 		<RedirectIfLoggedIn>
 			<div className="">
