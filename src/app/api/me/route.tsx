@@ -1,4 +1,3 @@
-import { AuthContextType } from "@/client/auth-provider"
 import CACHE from "@/cache"
 import { cookies } from "next/headers";
 import { IsError, MyError } from "@/server/types";

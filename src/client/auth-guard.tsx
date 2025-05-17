@@ -18,7 +18,7 @@ export function RedirectIfLoggedIn({
       // alert(
       //   'Redirect if logged in use effect | context.state == AuthContextState.LOGGED_IN '
       // );
-      router.replace('/dashboard');
+      router.replace('/topics');
     }
   }, [context, router]);
 
@@ -31,7 +31,7 @@ export function RedirectIfLoggedIn({
       <div className="text-[#0000FF]">Loading...</div>
     )) ||
     (context.state == AuthContextState.LOGGED_IN && (
-      <h1>Redirecting... to /dashboard</h1>
+      <h1>Redirecting...</h1>
     )) ||
     (context.state == AuthContextState.NOT_LOGGED_IN && (
       // Render loading auth here
@@ -66,7 +66,7 @@ export function RedirectIfNotLoggedIn({
       <div className="text-[#0000FF]">Loading...</div>
     )) ||
     (context.state == AuthContextState.NOT_LOGGED_IN && (
-      <h1>redirecting... to /</h1>
+      <h1>redirecting...</h1>
     )) ||
     (context.state == AuthContextState.LOGGED_IN && <>{children}</>)
   );

@@ -1,7 +1,7 @@
 'use client';
-import { act, useContext, useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 import { useState } from 'react';
-import { LoginUser } from '@/server/auth';
+import { LoginUser, Logout } from '@/server/auth';
 import { IsError, LoginFormState } from '@/server/types';
 import { useActionState } from 'react';
 import Form from 'next/form';
@@ -9,6 +9,8 @@ import { AuthContext, AuthContextState } from './auth-provider';
 import { RegisterUserFormState, IsRegisterUserFormError } from '@/server/types';
 import { RegisterUser } from '@/server/auth';
 import { mutate } from 'swr';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 //////////////////////////////////////////
 // Client.
@@ -22,16 +24,34 @@ export function HN_Logo() {
 
 export function HN_LoginButton() {
   return (
-    <button className="text-(length:--menu-text-size) font-normal">
+    <Link href="/" className="text-(length:--menu-text-size) font-normal">
       Login
-    </button>
+    </Link>
   );
 }
 
 export function HN_SignupButton() {
   return (
-    <button className="text-(length:--menu-text-size) font-normal">
+    <Link href="/signup" className="text-(length:--menu-text-size) font-normal">
       Sign Up
+    </Link>
+  );
+}
+
+export function HN_LogoutButton() {
+
+  const router = useRouter();
+
+  return (
+    <button
+      className="cursor-pointer text-(length:--menu-text-size) font-normal"
+      onClick={async () => {
+        const logout_result = await Logout();
+        mutate("http://localhost:3000/api/me");
+        router.push("/");
+      }}
+    >
+      Logout
     </button>
   );
 }
@@ -51,21 +71,35 @@ export function HN_Header() {
     <div className="flex border justify-between py-2 px-5">
       <HN_Logo />
       <div className="flex justify-between gap-5 ">
-        {!(authContext.state == AuthContextState.LOGGED_IN) && <HN_LoginButton />}
-        {!(authContext.state == AuthContextState.LOGGED_IN) && <HN_SignupButton />}
+        {authContext.state == AuthContextState.NOT_LOGGED_IN && (
+          <HN_LoginButton />
+        )}
+        {authContext.state == AuthContextState.NOT_LOGGED_IN && (
+          <HN_SignupButton />
+        )}
+        {authContext.state == AuthContextState.LOGGED_IN && <HN_LogoutButton />}
       </div>
     </div>
   );
 }
 
 export function HN_SignupForm() {
+  const api_route: string = 'http://localhost:3000/api/me';
+  const context = useContext(AuthContext);
+  const router = useRouter();
   const [formState, setFormState] = useState<RegisterUserFormState>(false);
   const [actionState, action, pending] = useActionState(RegisterUser, false);
 
   useEffect(() => {
-    console.log({ actionState });
-    mutate('http://localhost:3000/api/me');
-    setFormState(actionState);
+    if (IsError(actionState) || IsRegisterUserFormError(actionState)) {
+      console.log({ actionState });
+      setFormState(actionState);
+    } else {
+      if (context.set_auth && actionState == true) {
+        mutate(api_route);
+        context.set_auth({state: AuthContextState.LOGGED_IN});
+      }
+    }
   }, [actionState]);
 
   return (
@@ -129,21 +163,16 @@ export function HN_LoginForm() {
   const context = useContext(AuthContext);
   const [formState, setFormState] = useState<LoginFormState>();
   const [actionState, formAction, pending] = useActionState(LoginUser, false);
-  const api_route: string = 'http://localhost:3000/api/me'
+  const api_route: string = 'http://localhost:3000/api/me';
 
   useEffect(() => {
-    console.log('wWWWOOOOWOWOWOWOWOO', {actionState});
-
     if (IsError(actionState)) {
-      console.log('hhhhhhhhhhheeeeeeeeeeeeerrrrrrrrrrrrrreeeeeeeeeeeeeee');
       setFormState({
         error_code: actionState.error_code,
         error_message: actionState.error_message,
       });
     } else {
-      console.log("AAAAAAAAAAAAACCCCCCCCCTIIIIOONNNN STTAAAAAAATTTTTEE: ", { actionState });
       if (actionState && context.set_auth) {
-        alert("wassup")
         mutate(api_route);
         context.set_auth({ state: AuthContextState.LOGGED_IN });
       }

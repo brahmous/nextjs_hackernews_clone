@@ -18,23 +18,18 @@ export async function VerifySession(): Promise<boolean> {
 		const cookie_store = await cookies();
 		const session_id = cookie_store.get("session_id");
 
-		console.log({session_id});
-
 		if (!session_id || session_id && IsError(await CACHE().session_storage.sessionExists(session_id.value))) {
 			redirect_flag = true;
 		}
 	} catch (err) {
-		console.log({ err });
-		console.log("error caught in VerifySession()");
 		/*IDEA: Just return false?*/
 		throw err;
 	} finally {
 		if (redirect_flag) {
 			redirect("/");
 		}
-		return true;
 	}
-
+	return true;
 };
 
 /* NOTE: this should return MyError
@@ -51,10 +46,9 @@ export async function RegisterUser(prev_state: RegisterUserFormState, formData: 
 	const { user_db } = DB();
 
 	let redirect_flag: boolean = false;
-
 	try {
 		const cookie_store = await cookies();
-
+		
 		const create_user_result = await user_db.create_user_if_doesnt_exist(
 			{
 				username: (username ? username.toString() : undefined),
@@ -62,13 +56,13 @@ export async function RegisterUser(prev_state: RegisterUserFormState, formData: 
 				password: (password ? password.toString() : undefined),
 			}
 		);
-
+		
 		console.log({ create_user_result });
-
+		
 		if (IsError(create_user_result)) {
 			return { error_code: create_user_result.error_code, error_message: create_user_result.error_message };
 		}
-
+		
 		if (IsCreateUserIfDoesntExistInputValidationLog(create_user_result)) {
 			return {
 				username: create_user_result.username,
@@ -76,19 +70,31 @@ export async function RegisterUser(prev_state: RegisterUserFormState, formData: 
 				password: create_user_result.password
 			} as RegisterUserFormErrorLog;
 		}
-
+		
 		const session_id: string = uuidv4();
 		const { session_storage } = CACHE();
+		
+		console.log("########################### {session: storage}"+session_id+"########################")
+		const save_session_result = await session_storage.saveSessionIfDoesntExist(session_id, { user_id: create_user_result.email, expires_at: Date.now() });
 
-		await session_storage.saveSessionIfDoesntExist(session_id, { user_id: create_user_result.email, expires_at: Date.now() });
+		if (IsError(save_session_result)) {
+			return {
+				error_code: 2000,
+				error_message: "error saving the session to the session store!"
+			} as MyError;
+		}
+		
+		const cookie_storage = await cookies();
 
-		cookie_store.set("session_id", session_id);
+		cookie_storage.set("session_id", session_id);
+
+		console.log({save_session_result});
+
 		redirect_flag = true;
 	} catch (err) {
-		console.log("error caught in registeruser()");
 		throw err;
 	} finally {
-		if (redirect_flag) redirect("/dashboard");
+		//if (redirect_flag) redirect("/topics");
 	}
 
 	return true;
@@ -107,7 +113,6 @@ export async function LoginUser(prev_state: LoginFormState, formData: FormData):
 		const find_user_result = await user_db.find_user_by_email(email);
 		
 		if (IsError(find_user_result)) {
-			console.log("HHHHHHHHHHHHHHHHHHHHHHEEEEEEEEEEEEERRRRRRRRRRREEEEEEEEEEEEEE")
 			return {
 				error_code: find_user_result.error_code,
 				error_message: find_user_result.error_message
@@ -115,7 +120,6 @@ export async function LoginUser(prev_state: LoginFormState, formData: FormData):
 		}
 		
 		if (!(await verify(find_user_result.password_hash, password))) {
-			console.log("##################### HERREEE THE PASSWORDS AREN'T THE SAME ####################")
 			return {
 				error_code: 2000,
 				error_message: "Email or password are wrong!"
@@ -133,9 +137,6 @@ export async function LoginUser(prev_state: LoginFormState, formData: FormData):
 			return { error_code: save_session_result.error_code, error_message: save_session_result.error_message };
 		}
 
-		console.log("LOG IN FUNCION: ", {session_id})
-
-
 		const cookie_store = await cookies();
 		cookie_store.set("session_id", session_id);
 
@@ -143,13 +144,18 @@ export async function LoginUser(prev_state: LoginFormState, formData: FormData):
 		console.log("Error caught in LoguserIn()");
 		throw err;
 	}
-	// finally {
-		// redirect("/dashboard");
-	//}
-	console.log("AAAAAAAAAAAAAAABBBBBBBBBBBBBBCCCCCCCCCCCCCCCCCCCCCCC");
+
 	return true;
 };
 
-
-
-
+export async function Logout(): Promise<void | MyError> {
+	const cookie_store = await cookies();
+	const session_id = cookie_store.get("session_id");
+	if (!session_id) {
+		return {
+			error_code: 2000,
+			error_message: "Logout pressed when user is not logged in!"
+		} as MyError;
+	}
+	cookie_store.delete("session_id");
+}

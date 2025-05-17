@@ -42,11 +42,12 @@ export const AuthContext = createContext<
 export function AuthProvider(props: { children: React.ReactNode }) {
   const me_api_url: string = 'http://localhost:3000/api/me';
 
-  const { data, error, isLoading } = useSWR(me_api_url, fetchMe);
-
   const [authSate, setAuthState] = useState<AuthContextType>({
     state: AuthContextState.PENDING,
   });
+  
+  const { data, error, isLoading } = useSWR(me_api_url, fetchMe);
+
 
   useEffect(() => {
   	console.log("here: ", {data, error, isLoading});

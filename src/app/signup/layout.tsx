@@ -1,4 +1,4 @@
-import { RedirectIfLoggedIn } from "@/client/auth_guard"
+import { RedirectIfLoggedIn } from "@/client/auth-guard"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
 	return (

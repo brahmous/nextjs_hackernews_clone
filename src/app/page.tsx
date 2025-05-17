@@ -2,7 +2,7 @@
 // import Image from "next/image";
 //
 import { HN_Header, HN_LoginForm } from "@/client/login-form-component";
-import { RedirectIfLoggedIn } from "@/client/auth_guard";
+import { RedirectIfLoggedIn } from "@/client/auth-guard";
 
 
 import { useContext, useEffect } from "react";
