@@ -14,14 +14,14 @@ interface PostDTO {
   external_link: string;
 }
 
-interface CreatePostInputArgs {
+export interface CreatePostInputArgs {
   author_id?: number;
   title?: string;
   text?: string;
   external_link?: string;
 }
 
-interface CreatePostValidationError {
+export interface CreatePostValidationError {
   author_id: string[];
   title: string[];
   text: string[];
@@ -36,14 +36,14 @@ const create_post_input_schema = z.object({
   external_link: z.string().url(),
 });
 
-interface UpdatePostInputArgs {
+export interface UpdatePostInputArgs {
   author_id?: number;
   title?: string;
   text?: string;
   external_link?: string;
 }
 
-interface UpdatePostValidationError {
+export interface UpdatePostValidationError {
   title: string[];
   text: string[];
   external_link: string[];

@@ -1,8 +1,9 @@
-import { HN_BlogViewer } from "@/client/blogs-list";
+import { RedirectIfNotLoggedIn } from "@/client/auth-guard";
+import { HN_BlogViewer } from "@/client/topic-viewer";
 import { VerifySession } from "@/server/auth";
 
 export default async function Page() {
 	console.log("/topics page")
 	await VerifySession();
-	return 	<HN_BlogViewer blogs={[]}/>
+	return /*<RedirectIfNotLoggedIn>*/	<HN_BlogViewer blogs={[]}/> /*</RedirectIfNotLoggedIn>*/
 }

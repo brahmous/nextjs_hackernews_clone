@@ -18,7 +18,16 @@ export function HN_Logo() {
   return (
     <Link
       href={'/'}
-      className='className="cursor-pointer font-bold text-xs bg-black text-white flex flex-col justify-center items-center'
+      className='
+      cursor-pointer
+      font-bold
+      text-xs
+      bg-black
+      text-white
+      flex
+      flex-col 
+      justify-center
+      items-center'
     >
       <p className="p-2">HN</p>
     </Link>
@@ -69,7 +78,6 @@ export function HN_Header(props: HN_HeaderProps) {
 export function HN_SignupForm() {
   const api_route: string = 'http://localhost:3000/api/me';
   const context = useContext(AuthContext);
-  const router = useRouter();
   const [formState, setFormState] = useState<RegisterUserFormState>(false);
   const [actionState, action, pending] = useActionState(RegisterUser, false);
 
@@ -193,7 +201,7 @@ export function HN_Input({ name, type }: HN_InputProps) {
   );
 }
 
-enum HN_ButtonType {
+export enum HN_ButtonType {
   LINK,
   SUBMIT,
 }
