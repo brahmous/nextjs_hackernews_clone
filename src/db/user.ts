@@ -11,27 +11,19 @@ export interface CreateUserIfDoesntExistInputArgs {
   password?: string;
 }
 
-interface User {
+export interface UserDTO {
   id: number;
   username: string;
   email: string;
-  password_hash: string;
 }
 
-interface CreateUserIfDeosntExistInputValidationLog {
+export interface CreateUserIfDeosntExistInputValidationLog {
   username: string[];
   email: string[];
   password: string[];
-  error_count: number;
+  validation_errors_count: number;
 }
 
-export function IsCreateUserIfDoesntExistInputValidationLog(
-  value: any
-): value is CreateUserIfDeosntExistInputValidationLog {
-  return (
-    typeof value == 'object' && value != undefined && 'error_count' in value
-  );
-}
 
 /*
  * given a list of arguments
@@ -46,12 +38,12 @@ const CreateUserIfDoesntExistArgsSchema = z.object({
 export default class UserTable {
   async create_user_if_doesnt_exist(
     args: CreateUserIfDoesntExistInputArgs
-  ): Promise<User | MyError | CreateUserIfDeosntExistInputValidationLog> {
+  ): Promise<UserDTO & {password_hash: string}| MyError | CreateUserIfDeosntExistInputValidationLog> {
     let input_validation_log: CreateUserIfDeosntExistInputValidationLog = {
       username: [],
       email: [],
       password: [],
-      error_count: 0,
+      validation_errors_count: 0,
     };
 
     const validated_fields = CreateUserIfDoesntExistArgsSchema.safeParse(args);
@@ -61,17 +53,17 @@ export default class UserTable {
 
       if (field_errors.username) {
         input_validation_log.username = field_errors.username;
-        input_validation_log.error_count++;
+        input_validation_log.validation_errors_count++;
       }
 
       if (field_errors.email) {
         input_validation_log.email = field_errors.email;
-        input_validation_log.error_count++;
+        input_validation_log.validation_errors_count++;
       }
 
       if (field_errors.password) {
         input_validation_log.password = field_errors.password;
-        input_validation_log.error_count++;
+        input_validation_log.validation_errors_count++;
       }
 
       return input_validation_log;
@@ -105,7 +97,7 @@ export default class UserTable {
     }
   }
 
-  async find_user_by_email(email: string): Promise<User | MyError> {
+  async find_user_by_email(email: string): Promise<UserDTO & {password_hash: string} | MyError> {
     try {
       const result = await prisma.hn_user.findUnique({
         where: { email },
@@ -136,7 +128,7 @@ export default class UserTable {
     }
   }
 
-  async find_user_by_id(id: number): Promise<User | MyError> {
+  async find_user_by_id(id: number): Promise<UserDTO & {password_hash: string} | MyError> {
     try {
       const { hn_user } = prisma;
       const find_by_id_result = await hn_user.findUnique({ where: { id } });

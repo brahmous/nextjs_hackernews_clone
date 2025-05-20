@@ -8,8 +8,9 @@ import { LoginFormState } from "@/server/types";
 import { hash, verify } from "argon2";
 import { v4 as uuidv4 } from "uuid";
 import { use } from "react";
-import { IsCreateUserIfDoesntExistInputValidationLog } from "@/db/user";
+import { IsValidationError } from "@/db/types";
 import { create } from "domain";
+import { CreateUserIfDeosntExistInputValidationLog } from "@/db/user";
 
 export async function VerifySession(): Promise<boolean> {
 
@@ -63,7 +64,7 @@ export async function RegisterUser(prev_state: RegisterUserFormState, formData: 
 			return { error_code: create_user_result.error_code, error_message: create_user_result.error_message };
 		}
 		
-		if (IsCreateUserIfDoesntExistInputValidationLog(create_user_result)) {
+		if (IsValidationError<CreateUserIfDeosntExistInputValidationLog>(create_user_result)) {
 			return {
 				username: create_user_result.username,
 				emai: create_user_result.email,
@@ -74,7 +75,6 @@ export async function RegisterUser(prev_state: RegisterUserFormState, formData: 
 		const session_id: string = uuidv4();
 		const { session_storage } = CACHE();
 		
-		console.log("########################### {session: storage}"+session_id+"########################")
 		const save_session_result = await session_storage.saveSessionIfDoesntExist(session_id, { user_id: create_user_result.email, expires_at: Date.now() });
 
 		if (IsError(save_session_result)) {
@@ -85,10 +85,7 @@ export async function RegisterUser(prev_state: RegisterUserFormState, formData: 
 		}
 		
 		const cookie_storage = await cookies();
-
 		cookie_storage.set("session_id", session_id);
-
-		console.log({save_session_result});
 
 		redirect_flag = true;
 	} catch (err) {

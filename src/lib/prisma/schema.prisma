@@ -1,16 +1,38 @@
 generator client {
-	provider = "prisma-client-js"
-	output = "../../generated/prisma"
+  provider = "prisma-client-js"
+  output   = "../../generated/prisma"
 }
 
 datasource db {
-	provider = "postgresql"
-	url = "postgres://hn_admin:pswd@localhost:5432/hn_"
+  provider = "postgresql"
+  url      = "postgres://hn_admin:pswd@localhost:5432/hn_"
 }
 
 model hn_user {
-	id Int @id @default(autoincrement())
-	email String @unique
-	password String
-	username String
+  id       Int          @id @default(autoincrement())
+  email    String       @unique
+  password String
+  username String
+  posts    hn_post[]
+  comments hn_comment[]
+}
+
+model hn_post {
+  id            Int          @id @default(autoincrement())
+  title         String
+  body          String
+  external_link String
+  created_at    DateTime     @default(now())
+  author        hn_user      @relation(fields: [author_id], references: [id])
+  author_id     Int
+  comments      hn_comment[]
+}
+
+model hn_comment {
+  id        Int     @id @default(autoincrement())
+  comment   String
+  author_id Int
+  post_id   Int
+  author    hn_user @relation(fields: [author_id], references: [id])
+  post      hn_post @relation(fields: [post_id], references: [id])
 }
